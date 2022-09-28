@@ -6,7 +6,6 @@ const map = require('async/map')
 const eachSeries = require('async/eachSeries')
 const Stoplight = require('./util/stoplight.js')
 const createPayload = require('./util/create-payload.js')
-const noop = function(){}
 
 module.exports = Web3ProviderEngine
 
@@ -39,7 +38,7 @@ function Web3ProviderEngine(opts = {}) {
 
 // public
 
-Web3ProviderEngine.prototype.start = function(cb = noop){
+Web3ProviderEngine.prototype.start = function() {
   const self = this
 
   // trigger start
