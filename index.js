@@ -23,12 +23,14 @@ function Web3ProviderEngine(opts) {
 
   // block polling
   const directProvider = { sendAsync: self._handleAsync.bind(self) }
-  const blockTrackerProvider = opts.blockTrackerProvider || directProvider
-  self._blockTracker = opts.blockTracker || new PollingBlockTracker({
-    provider: blockTrackerProvider,
-    pollingInterval: opts.pollingInterval || 4000,
-    setSkipCacheFlag: true,
-  })
+  const blockTrackerProvider = opts?.blockTrackerProvider || directProvider
+  self._blockTracker = opts?.blockTracker || (
+    blockTrackerProvider && new PollingBlockTracker({
+        provider: blockTrackerProvider,
+        pollingInterval: opts.pollingInterval || 4000,
+        setSkipCacheFlag: true,
+      })
+  )
 
   // set initialization blocker
   self._ready = new Stoplight()
@@ -47,7 +49,7 @@ Web3ProviderEngine.prototype.start = function(cb = noop){
   self._ready.go()
 
   // on new block, request block body and emit as events
-  self._blockTracker.on('latest', (blockNumber) => {
+  self._blockTracker?.on('latest', (blockNumber) => {
     // get block body
     self._getBlockByNumberWithRetry(blockNumber, (err, block) => {
       if (err) {
@@ -69,8 +71,8 @@ Web3ProviderEngine.prototype.start = function(cb = noop){
   })
 
   // forward other events
-  self._blockTracker.on('sync', self.emit.bind(self, 'sync'))
-  self._blockTracker.on('error', self.emit.bind(self, 'error'))
+  self._blockTracker?.on('sync', self.emit.bind(self, 'sync'))
+  self._blockTracker?.on('error', self.emit.bind(self, 'error'))
 
   // update state
   self._running = true
@@ -81,7 +83,7 @@ Web3ProviderEngine.prototype.start = function(cb = noop){
 Web3ProviderEngine.prototype.stop = function(){
   const self = this
   // stop block polling by removing event listeners
-  self._blockTracker.removeAllListeners()
+  self._blockTracker?.removeAllListeners()
   // update state
   self._running = false
   // signal that we stopped
