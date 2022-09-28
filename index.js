@@ -5,7 +5,6 @@ const { PollingBlockTracker } = require('eth-block-tracker')
 const map = require('async/map')
 const eachSeries = require('async/eachSeries')
 const Stoplight = require('./util/stoplight.js')
-const cacheUtils = require('./util/rpc-cache-utils.js')
 const createPayload = require('./util/create-payload.js')
 const noop = function(){}
 
