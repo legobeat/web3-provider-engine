@@ -14,12 +14,10 @@ module.exports = Web3ProviderEngine
 
 inherits(Web3ProviderEngine, EventEmitter)
 
-function Web3ProviderEngine(opts) {
+function Web3ProviderEngine(opts = {}) {
   const self = this
   EventEmitter.call(self)
   self.setMaxListeners(30)
-  // parse options
-  opts = opts || {}
 
   // block polling
   const directProvider = { sendAsync: self._handleAsync.bind(self) }
@@ -58,7 +56,7 @@ Web3ProviderEngine.prototype.start = function(cb = noop){
       }
       if (!block) {
         console.log(block)
-        this.emit('error', new Error("Could not find block"))
+        this.emit('error', new Error('Could not find block'))
         return
       }
       const bufferBlock = toBufferBlock(block)
@@ -153,7 +151,7 @@ Web3ProviderEngine.prototype._getBlockByNumberWithRetry = function(blockNumber, 
       if (retriesRemaining > 0) {
         // wait 1s then try again
         retriesRemaining--
-        setTimeout(function () {
+        setTimeout(() => {
           attemptRequest()
         }, 1000)
         return
@@ -179,12 +177,12 @@ Web3ProviderEngine.prototype._getBlockByNumber = function(blockNumber, cb) {
 }
 
 Web3ProviderEngine.prototype._handleAsync = function(payload, finished) {
-  var self = this
-  var currentProvider = -1
-  var result = null
-  var error = null
+  const self = this
+  let currentProvider = -1
+  let result = null
+  let error = null
 
-  var stack = []
+  const stack = []
 
   next()
 
@@ -198,7 +196,7 @@ Web3ProviderEngine.prototype._handleAsync = function(payload, finished) {
       end(new Error('Request for method "' + payload.method + '" not handled by any subprovider. Please check your subprovider configuration to ensure this method is handled.'))
     } else {
       try {
-        var provider = self._providers[currentProvider]
+        const provider = self._providers[currentProvider]
         provider.handleRequest(payload, next, end)
       } catch (e) {
         end(e)
@@ -210,31 +208,30 @@ Web3ProviderEngine.prototype._handleAsync = function(payload, finished) {
     error = _error
     result = _result
 
-    eachSeries(stack, function(fn, callback) {
+    eachSeries(stack, (fn, callback) => {
 
       if (fn) {
         fn(error, result, callback)
       } else {
         callback()
       }
-    }, function() {
+    }, () => {
 
-      var resultObj = {
+      const resultObj = {
         id: payload.id,
         jsonrpc: payload.jsonrpc,
         result: result
       }
 
-      if (error != null) {
+      if (error) {
         resultObj.error = {
           message: error.stack || error.message || error,
           code: -32000
         }
         // respond with both error formats
-        finished(error, resultObj)
-      } else {
-        finished(null, resultObj)
+        return finished(error, resultObj)
       }
+      finished(null, resultObj)
     })
   }
 }
